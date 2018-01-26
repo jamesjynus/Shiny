@@ -1,0 +1,258 @@
+---
+title: "Yinan_Jiang_R"
+output: html_document
+---
+```{r}
+library(dplyr)
+library(ggplot2)
+library(googleVis)
+library(shiny)
+library(shinydashboard)
+library(dygraphs)
+library(tidyr)
+library(leaflet)
+library(data.table)
+```
+
+```{r}
+#read original file
+
+setwd("./Yinan_Jiang_Shiny")
+crime.raw <- fread("crime.raw.csv", stringsAsFactors = F)
+crime.raw <- as.data.frame(crime.raw)
+```
+
+```{r}
+#random sampling 50,000 obs
+set.seed(0)
+sample=sample(5580035, 100000, replace=FALSE)
+
+crime.sampled=crime.raw[sample, ]
+```
+
+```{r}
+#subset the data (taking columns needed for analysis)
+crime=crime.sampled %>%
+  select(CMPLNT_NUM, CMPLNT_FR_DT, CMPLNT_FR_TM, KY_CD, OFNS_DESC, CRM_ATPT_CPTD_CD, LAW_CAT_CD, BORO_NM, PREM_TYP_DESC, Latitude, Longitude) %>%
+  drop_na()
+```
+
+```{r}
+#renaming the columns
+crime=crime %>%
+  rename(ID=CMPLNT_NUM, Date=CMPLNT_FR_DT, Time=CMPLNT_FR_TM,
+         Code=KY_CD, Offense=OFNS_DESC, Status=CRM_ATPT_CPTD_CD, 
+         Type=LAW_CAT_CD, Boro=BORO_NM, Premise=PREM_TYP_DESC)
+```
+
+
+```{r}
+#mutating new columns
+crime=crime %>%
+  mutate(Year=substr(Date,7,10)) %>%
+  mutate(Month=substr(Date, 1, 2)) %>%
+  mutate(Hour=paste0(substr(Time, 1, 2), ":00")) %>%
+  filter(Year>2005) %>%
+  filter(Month != '') %>%
+  filter(Hour != ':00' & Hour != '24:00') %>%
+  filter(Premise != '')
+```
+
+```{r}
+#save crime.csv for future use
+write.csv(crime, file = "crime.csv")
+```
+
+```{r}
+#basic data description
+count_by_year=crime %>%
+  group_by(Year) %>%
+  count()
+
+count_by_month=crime %>%
+  group_by(Month) %>%
+  count()
+
+count_by_hour=crime %>%
+  group_by(Hour) %>%
+  count()
+
+count_by_type=crime %>%
+  group_by(Type) %>%
+  count()
+
+count_by_status=crime %>%
+  group_by(Status) %>%
+  count()
+
+count_by_premise=crime %>%
+  group_by(Premise) %>%
+  count()
+
+count_by_status=crime %>%
+  group_by(Status) %>%
+  count()
+
+count_by_boro=crime %>%
+  group_by(Boro) %>%
+  count()
+```
+
+```{r}
+#construct classifier function on premise
+classifier=function(x) {
+  if (x=='AIRPORT TERMINAL'|x=='BRIDGE'|x=='BUS (NYC TRANSIT)'|
+      x=='BUS (OTHER)'|x=='BUS STOP'|x=='BUS TERMINAL'|x=='FERRY/FERRY TERMINAL'|
+      x=='GAS STATION'|x=='HIGHWAY/PARKWAY'|x=='MARINA/PIER'|
+      x=='PARKING LOT/GARAGE (PRIVATE)'|x=='PARKING LOT/GARAGE (PUBLIC)'|
+      x=='TAXI (LIVERY LICENSED)'|x=='TAXI (YELLOW LICENSED)'|x=='TAXI/LIVERY (UNLICENSED)'|
+      x=='TRANSIT - NYC SUBWAY'|x=='TRANSIT FACILITY (OTHER)'|x=='TUNNEL'
+      ) return('Transportation')
+  else if (x=='BEAUTY & NAIL SALON'|x=='BOOK/CARD'|x=='CANDY STORE'|
+           x=='CHAIN STORE'|x=='CLOTHING/BOUTIQUE'|x=='COMMERCIAL BUILDING'|
+           x=='DEPARTMENT STORE'|x=='DRUG STORE'|x=='DRY CLEANER/LAUNDRY'|
+           x=='FOOD SUPERMARKET'|x=='ROCERY/BODEGA'|x=='JEWELRY'|
+           x=='LIQUOR STORE'|x=='PHOTO/COPY'|x=='SHOE'|x=='SMALL MERCHANT'|
+           x=='STORE UNCLASSIFIED'|x=='TELECOMM. STORE'|x=='VARIETY STORE'|
+           x=='VIDEO STORE') return('Stores')
+  else if (x=='FAST FOOD'|x=='RESTAURANT/DINER') return('Restaurant')
+  else if (x=='GYM/FITNESS FACILITY'|x=='HOSPITAL'|x=='HOTEL/MOTEL'|
+           x=='PARK/PLAYGROUND'|x=='BAR/NIGHT CLUB'|x=='PRIVATE/PAROCHIAL SCHOOL'|
+           x=='PUBLIC BUILDING'|x=='PUBLIC SCHOOL'|x=='SOCIAL CLUB/POLICY'|
+           x=='ATM'|x=='BANK'|x=='CHECK CASHING BUSINESS'|x=='LOAN COMPANY'
+           ) return('Public Venue')
+  else if (x=='RESIDENCE - APT. HOUSE'|x=='RESIDENCE - PUBLIC HOUSING'|
+           x=='RESIDENCE-HOUSE') return('Residence')
+  else if (x=='STREET') return('Street')
+  else {
+    return('Other')
+  }
+}
+
+crime$Premise=sapply(crime$Premise, classifier)
+crime=crime %>%
+ rename(Premises=Premise)
+crime=crime %>%
+  select(-V1)
+
+```
+
+```{r}
+#add population column
+crime$boro_year=paste0(crime$Boro,crime$Year)
+population=function(x) {
+  if (x=='BRONX2006') return(1369249)
+  else if (x=='BRONX2007') return(1374535)
+  else if (x=='BRONX2008') return(1379821)
+  else if (x=='BRONX2009') return(1383000)
+  else if (x=='BRONX2010') return(1385107)
+  else if (x=='BRONX2011') return(1396876)
+  else if (x=='BRONX2012') return(1408645)
+  else if (x=='BRONX2013') return(1420414)
+  else if (x=='BRONX2014') return(1432183)
+  else if (x=='BRONX2015') return(1443952)
+  else if (x=='BRONX2016') return(1455720)
+  else if (x=='BROOKLYN2006') return(2465690)
+  else if (x=='BROOKLYN2007') return(2475444)
+  else if (x=='BROOKLYN2008') return(2485198)
+  else if (x=='BROOKLYN2009') return(2494952)
+  else if (x=='BROOKLYN2010') return(2504706)
+  else if (x=='BROOKLYN2011') return(2525446)
+  else if (x=='BROOKLYN2012') return(2546186)
+  else if (x=='BROOKLYN2013') return(2566926)
+  else if (x=='BROOKLYN2014') return(2587666)
+  else if (x=='BROOKLYN2015') return(2608406)
+  else if (x=='BROOKLYN2016') return(2629150)
+  else if (x=='MANHATTAN2006') return(1566766)
+  else if (x=='MANHATTAN2007') return(1571543)
+  else if (x=='MANHATTAN2008') return(1576320)
+  else if (x=='MANHATTAN2009') return(1581097)
+  else if (x=='MANHATTAN2010') return(1585874)
+  else if (x=='MANHATTAN2011') return(1595517)
+  else if (x=='MANHATTAN2012') return(1605160)
+  else if (x=='MANHATTAN2013') return(1614803)
+  else if (x=='MANHATTAN2014') return(1624446)
+  else if (x=='MANHATTAN2015') return(1634089)
+  else if (x=='MANHATTAN2016') return(1643734)
+  else if (x=='QUEENS2006') return(2230000)
+  else if (x=='QUEENS2007') return(2230000)
+  else if (x=='QUEENS2008') return(2230000)
+  else if (x=='QUEENS2009') return(2230000)
+  else if (x=='QUEENS2010') return(2230545)
+  else if (x=='QUEENS2011') return(2247630)
+  else if (x=='QUEENS2012') return(2264715)
+  else if (x=='QUEENS2013') return(2281800)
+  else if (x=='QUEENS2014') return(2298885)
+  else if (x=='QUEENS2015') return(2315970)
+  else if (x=='QUEENS2016') return(2333054)
+  else if (x=='STATEN ISLAND2006') return(455000)
+  else if (x=='STATEN ISLAND2007') return(455000)
+  else if (x=='STATEN ISLAND2008') return(460000)
+  else if (x=='STATEN ISLAND2009') return(460000)
+  else if (x=='STATEN ISLAND2010') return(468730)
+  else if (x=='STATEN ISLAND2011') return(470000)
+  else if (x=='STATEN ISLAND2012') return(471000)
+  else if (x=='STATEN ISLAND2013') return(472000)
+  else if (x=='STATEN ISLAND2014') return(473000)
+  else if (x=='STATEN ISLAND2015') return(474000)
+  else if (x=='STATEN ISLAND2016') return(476015)
+  else {
+    return(0)
+  }
+}
+
+crime$Population=sapply(crime$boro_year, population)
+crime=crime %>%
+  select(-boro_year)
+```
+
+```{r}
+#further data clean up
+crime$Date=as.Date(crime$Date, format("%m/%d/%Y"))
+class(crime$Month)
+
+crime$Month=as.numeric(crime$Month)
+
+
+Month_converter=function(x) {
+  if (x==1) return('Jan')
+  else if (x==2) return('Feb')
+  else if (x==3) return('Mar')
+  else if (x==4) return('Apr')
+  else if (x==5) return('May')
+  else if (x==6) return('Jun')
+  else if (x==7) return('Jul')
+  else if (x==8) return('Aug')
+  else if (x==9) return('Sep')
+  else if (x==10) return('Oct')
+  else if (x==11) return('Nov')
+  else if (x==12) return('Dec')
+}
+
+crime$Month=sapply(crime$Month, Month_converter)
+
+crime$Year_Month=paste(crime$Year, crime$Month, sep='_')
+
+crime$Year_Month_New=substr(crime$Date, 1, 7)
+
+```
+
+```{r}
+new=crime %>%
+  group_by(Boro, Year_Month) %>%
+  summarise(n=n())
+
+g=ggplot(data=new, aes(x=Year_Month, y=n, color=Boro))
+g+geom_point() + theme(plot.subtitle = element_text(vjust = 1), 
+    plot.caption = element_text(vjust = 1), 
+    axis.text = element_text(size = 8, hjust = 1, 
+        angle = 80))
+
+crime=crime %>%
+  select(-V1)
+
+
+
+```
+
+
