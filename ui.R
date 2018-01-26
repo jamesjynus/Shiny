@@ -25,25 +25,25 @@ dashboardPage(
               h2('Crime Counts by Type'),
               fluidRow(box(selectizeInput("year1","Select Year", 
                             choice2, selected=2016), width=10)),
-              fluidRow(box(plotOutput("plottype"), width=10))
+              fluidRow(box(plotlyOutput("plottype"), width=10))
       ),
       tabItem(tabName='month',
               h2('Crime Counts by Month'),
               fluidRow(box(selectizeInput("year2","Select Year", 
                              choice2, selected=2016), width=10)),
-              fluidRow(box(plotOutput("plotmonth"), width=10))
+              fluidRow(box(plotlyOutput("plotmonth"), width=10))
       ),
       tabItem(tabName='hour',
               h2('Crime Counts by Hour'),
               fluidRow(box(selectizeInput("year3","Select Year", 
                                           choice2, selected=2016), width=10)),
-              fluidRow(box(plotOutput("plothour"), width=10))
+              fluidRow(box(plotlyOutput("plothour"), width=10))
       ),
       tabItem(tabName='boro',
               h2('Crime Counts by Borough'),
               fluidRow(box(selectizeInput("year4","Select Year",
                              choice2, selected=2016), width=10)),
-              fluidRow(box(plotOutput("plotboro"), width=10)),
+              fluidRow(box(plotlyOutput("plotboro"), width=10)),
               br(),
               fluidRow(img(src='districtmap.jpg'))
       ),
@@ -51,7 +51,7 @@ dashboardPage(
               h2('Crime Counts by Premises'),
               fluidRow(box(selectizeInput("year5","Select Year",
                              choice2, selected=2016), width=10)),
-              fluidRow(box(plotOutput("plotpremises"), width=10))
+              fluidRow(box(plotlyOutput("plotpremises"), width=10))
       ),
       tabItem(tabName='map',
               h2("Mapping"),
@@ -68,7 +68,7 @@ dashboardPage(
                             checkboxGroupInput(inputId = "premises1", label = h4("Select Premises"), 
                                                choices = choice3, selected = 'Residence'),
                             sliderInput(inputId = "year6", label = h4("Select Year"), min=2006, max=2016, step =1,
-                                        value = c(2012, 2016)))
+                                        sep='', value = c(2012, 2016)))
       )),
       tabItem(tabName='heatmap',
               h2("Heat Map"),
@@ -84,7 +84,7 @@ dashboardPage(
                                 checkboxGroupInput(inputId="premises2", label=h4("Select Premises"), 
                                                    choices=choice3, selected='Residence'),
                                 sliderInput(inputId = "year7", label = h4("Select Year"), min=2006, max=2016, step =1,
-                                            value = c(2012, 2016)))
+                                            sep='', value = c(2012, 2016)))
       )),
       tabItem(tabName='timeseries',
               h2('Crime Rates Visualization'),
