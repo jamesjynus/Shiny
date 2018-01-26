@@ -43,9 +43,7 @@ dashboardPage(
               h2('Crime Counts by Borough'),
               fluidRow(box(selectizeInput("year4","Select Year",
                              choice2, selected=2016), width=10)),
-              fluidRow(box(plotlyOutput("plotboro"), width=10)),
-              br(),
-              fluidRow(img(src='districtmap.jpg'))
+              fluidRow(box(plotlyOutput("plotboro"), width=10))
       ),
       tabItem(tabName='premises',
               h2('Crime Counts by Premises'),
