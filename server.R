@@ -130,6 +130,6 @@ function(input, output) {
                yaxis = list(title = "Crime Rate"), showlegend = TRUE)
   })
   output$table=DT::renderDataTable({
-    datatable(crime, rownames=FALSE)
+    datatable(crime, rownames=FALSE, options=list(scrollX=TRUE))
   })
 }
