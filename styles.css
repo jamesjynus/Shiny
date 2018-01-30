@@ -2,7 +2,37 @@ input[type="number"] {
   max-width: 80%;
 }
 
-div.outer {
+.outer2 {
+  background-image:url("https://umusama2015.files.wordpress.com/2015/04/nypd_police_car.jpg");
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-attachment: fixed;
+  background-size: 1300px 850px;
+  position:fixed;
+  top: 41px;
+  left: 230px;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.outer3 {
+  background-image:url("https://www.ihdimages.com/wp-content/uploadsktz/2014/11/new_york_city_black_and_white_wallpaper.jpg");
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-attachment: fixed;
+  background-size: 1300px 850px;
+  position:fixed;
+  top: 41px;
+  left: 230px;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+.outer {
   position: fixed;
   top: 41px;
   left: 0;
@@ -17,7 +47,26 @@ body, label, input, button, select {
   font-family: 'Helvetica Neue', Helvetica;
   font-weight: 200;
 }
-h1, h2, h3, h4 { font-weight: 500; }
+
+h1 { font-weight: 600;
+    color: yellow;
+}
+
+h2 { font-weight: 500;
+    color: black;
+}
+
+h3 { font-weight: 500;
+    color: white;
+}
+
+h4 { font-weight: 500;
+    color: black;
+}
+
+h5 { font-weight: 600;
+    color: yellow;
+}
 
 #controls {
   /* Appearance */

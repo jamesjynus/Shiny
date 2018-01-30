@@ -3,8 +3,10 @@ dashboardPage(
   skin='purple',
   dashboardHeader(title='New York City Crime'),
   dashboardSidebar(
-    sidebarUserPanel('James Jiang Shiny Project'),
+    sidebarUserPanel('James Jiang',
+                     image="https://yt3.ggpht.com/-04uuTMHfDz4/AAAAAAAAAAI/AAAAAAAAAAA/Kjeupp-eNNg/s100-c-k-no-rj-c0xffffff/photo.jpg"),
     sidebarMenu(
+      menuItem("Introduction", tabName = "intro", icon = icon("info")),
       menuItem("Overview", icon = icon("bar-chart"),
                menuSubItem('Crime by Type',tabName='type',icon = icon("file-text-o")),
                menuSubItem('Crime by Month',tabName='month',icon = icon("calendar")),
@@ -15,12 +17,33 @@ dashboardPage(
       menuItem("Heat Map",tabName = "heatmap", icon = icon('fire')),
       menuItem("Time Series",tabName = "timeseries", icon = icon('line-chart')),
       menuItem("Data", tabName = "data", icon = icon("database")),
-      menuItem("Info",tabName = "info", icon = icon("info"))
+      menuItem("Potential Expansions",tabName = "expand", icon = icon("hourglass-2"))
     )
   ),
   dashboardBody(
     
     tabItems(
+      tabItem(tabName = "intro",
+              div(class="outer2",
+                  tags$head(
+                    includeCSS("styles.css")),
+              br(),
+              h1("Background"),
+              h3("*  Just 20 years ago, Streets in NYC were racked with crime: murders, burglaries, drug deals, car thefts...
+                 Since 90s the city has seen a significant drop in crime thanks to increased police oversight, change in demographics etc."),
+              h3("*  However, public Satefy still remains a major concern. 
+                 We need a convinient crime visualization tool for city's new comers"),
+              br(),
+              h1("The Dataset"),
+              h3("--  Data Source: http://opendata.dc.gov/"),
+              h3("--  Original Dataset Size: 5.5M Obs"),
+              h3("--  Sampled Dataset Size: 100,000 Obs"),
+              br(),
+              br(),
+              br(),
+              h5("Author: Yinan Jiang"),
+              h5("Email: yinanjia@usc.com")
+      )),
       tabItem(tabName='type',
               h2('Crime Counts by Type'),
               fluidRow(box(selectizeInput("year1","Select Year", 
@@ -58,9 +81,8 @@ dashboardPage(
                     includeCSS("styles.css")),
               leafletOutput("map",width = '100%',height = '100%'),
               absolutePanel(id = "controls", class = "panel panel-default", fixed = TRUE, draggable = TRUE, 
-                            top = 100, left = "auto", right = 15, bottom = "auto",
+                            top = 150, left = "auto", right = 15, bottom = "auto",
                             width = 200, height = "auto",
-                            h2("Crime in NYC"),
                             checkboxGroupInput(inputId = "type1", label = h4("Select Crime Type"), 
                                                choices = choice1, selected = 'FELONY'),
                             checkboxGroupInput(inputId = "premises1", label = h4("Select Premises"), 
@@ -93,10 +115,16 @@ dashboardPage(
       tabItem(tabName='data',
               fluidRow(box(DT::dataTableOutput("table"), width=12))
       ),
-      tabItem(tabName = "info",
-          h4("Data Source: http://opendata.dc.gov/"),
-          h4("Author: Yinan Jiang"),
-          h4("Email: yinanjia@usc.com"))
+      tabItem(tabName = "expand",
+              div(class="outer3",
+                  tags$head(
+                    includeCSS("styles.css")),
+          br(),
+          h2("#1 Every year new data will be available on http://opendata.dc.gov/"),
+          br(),
+          h2("#2 There are over 300 distinct crime type, can add more details"),
+          br(),
+          h2("#3 Overlay with apartment/house rental rates info")))
     )
   )
 )

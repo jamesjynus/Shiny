@@ -87,7 +87,7 @@ function(input, output) {
                               'Status:', Status, '<br/>',
                               'Borough:', Boro,'<br/>')) %>%
       addCircleMarkers(lng=~Longitude, lat=~Latitude, radius=5,
-                       group='Point', color=~groupColors(Type),
+                         group='Point', color=~groupColors(Type),
                        popup=~paste('<b><font color="Red">','Crime Information','</font></b><br/>',
                                     'Crime Type:', Type,'<br/>',
                                     'Date:', Date,'<br/>',
@@ -108,7 +108,7 @@ function(input, output) {
   })
   output$heatmap=renderLeaflet({
     leaflet() %>% 
-      addProviderTiles(providers$CartoDB.DarkMatter) %>% 
+      addProviderTiles("CartoDB.DarkMatter") %>% 
       setView(-73.9485,40.7447,zoom=12)
   })
   observe({
