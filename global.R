@@ -6,9 +6,10 @@ library(leaflet)
 library(shinydashboard)
 library(dplyr)
 library(plotly)
+library(DT)
 
 # convert matrix to dataframe
-crime=fread("crime.csv", stringsAsFactors=F)
+crime=fread("data/crime.csv", stringsAsFactors=F)
 crime=as.data.frame(crime)
 # create variable subsets
 count.type=crime %>%
